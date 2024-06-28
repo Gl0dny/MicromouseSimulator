@@ -3,7 +3,8 @@
 #include <iostream>
 #include <fstream>
 
-Logger::Logger(const std::string &filePath) :logFilePath(filePath), logToFile(false), logToFileOnly(false) {
+Logger::Logger(const std::string &filePath) 
+    : logFilePath(filePath), logToFile(false), logToFileOnly(false) {
     createLogDirectory(logFilePath);
 }
 
@@ -34,20 +35,20 @@ Logger& Logger::enableFileOutput(bool toFileOnly /* = true */) {
 #endif
 
     Utils::fileExists(logFilePath);
-
-    logFile.open(logFilePath, std::ios::out | std::ios::app);
-    if (logFile.is_open()) {
-        logToFile = true;
-        logToFileOnly = toFileOnly;
+    
+        logFile.open(logFilePath, std::ios::out | std::ios::app);
+        if (logFile.is_open()) {
+            logToFile = true;
+            logToFileOnly = toFileOnly;
 #ifdef DEBUG_MODE
-        if (toFileOnly) {
-            std::cout << "Logging to file only: " << logFilePath << std::endl;
-        } else {
-            std::cout << "Logging to both terminal and file: " << logFilePath << std::endl;
-        }
+            if (toFileOnly) {
+                std::cout << "Logging to file only: " << logFilePath << std::endl;
+            } else {
+                std::cout << "Logging to both terminal and file: " << logFilePath << std::endl;
+            }
 #endif
-    } else {
-        std::cerr << "Unable to open log file: " << logFilePath << std::endl;
+        } else {
+            std::cerr << "Unable to open log file: " << logFilePath << std::endl;
     }
     return *this;
 }

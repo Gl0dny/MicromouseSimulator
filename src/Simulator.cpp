@@ -14,6 +14,10 @@ Simulator::Simulator(std::shared_ptr<Micromouse> micromouse, Maze* maze)
     logger->logMessage("Simulator initialized.");
 }
 
+Simulator::~Simulator() {
+    logger->disableFileOutput();
+}
+
 void Simulator::run() {
     running = true;
 

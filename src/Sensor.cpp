@@ -1,5 +1,7 @@
 #include "Sensor.h"
 #include <iostream>
+#include "Maze.h"
+#include "Logger.h"
 
 Sensor::Sensor(Maze* maze, const std::string& name)
     : maze(maze), logger(std::make_unique<Logger>("logs/" + name + ".log")) {
@@ -15,6 +17,10 @@ Sensor::Sensor(Maze* maze, const std::string& name)
     };
     logger->enableFileOutput();
     logger->clearLogFile();
+}
+
+Sensor::~Sensor() {
+    logger->disableFileOutput();
 }
 
 DistanceSensor::DistanceSensor(Maze* maze)

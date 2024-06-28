@@ -22,7 +22,7 @@ namespace Utils {
         return buf;
     }
 
-    void createDirectory(const std::string &dirPath) {
+    void createDirectory(const std::string& dirPath) {
         struct stat info;
 
         if (stat(dirPath.c_str(), &info) != 0) {
@@ -39,7 +39,7 @@ namespace Utils {
         }
     }
 
-    void clearFile(const std::string &filePath) {
+    void clearFile(const std::string& filePath) {
         std::ofstream ofs(filePath, std::ios::trunc);
         if (ofs) {
 #ifdef DEBUG_MODE
@@ -50,7 +50,7 @@ namespace Utils {
         }
     }
 
-    void fileExists(const std::string &filePath) {
+    void fileExists(const std::string& filePath) {
         std::ifstream ifs(filePath);
 #ifdef DEBUG_MODE
         if (ifs) {

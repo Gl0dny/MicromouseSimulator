@@ -9,14 +9,26 @@
 #include <mutex>
 #include <condition_variable>
 
+/**
+ * @brief CommandQueue class to handle command input in a thread-safe manner. 
+ */
 class CommandQueue {
 public:
+    /**
+     * @brief Pushes a command onto the queue.
+     * @param command The command to be pushed.
+     */
     void push(const std::string& command) {
         std::lock_guard<std::mutex> lock(mtx);
         commands.push(command);
         cv.notify_one();
     }
 
+    /**
+     * @brief Pops a command from the queue.
+     * @param command Reference to store the popped command.
+     * @return True if a command was successfully popped, false otherwise.
+     */
     bool pop(std::string& command) {
         std::unique_lock<std::mutex> lock(mtx);
         if (cv.wait_for(lock, std::chrono::milliseconds(100), [this] { return !commands.empty(); })) {
@@ -28,11 +40,15 @@ public:
     }
 
 private:
-    std::queue<std::string> commands;
-    std::mutex mtx;
-    std::condition_variable cv;
+    std::queue<std::string> commands; ///< Queue to store commands.
+    std::mutex mtx; ///< Mutex for thread safety.
+    std::condition_variable cv; ///< Condition variable for synchronization.
 };
 
+/**
+ * @brief Main function for the Micromouse simulation program. The main function orchestrates the Micromouse simulation by managing user input through CommandQueue, initializing and interacting with the Maze and Micromouse objects, and controlling simulation flow through threads (inputThread and simulationThread). It ensures thread-safe command handling and logging of simulation activities, providing a structured approach to simulate and control Micromouse behavior in a maze environment.
+ * @return Exit status code.
+ */
 int main() {
     auto main_log_file = "./logs/main.log";
     auto logger = std::make_unique<Logger>(main_log_file);

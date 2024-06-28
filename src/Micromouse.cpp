@@ -8,6 +8,10 @@ Micromouse::Micromouse(const std::string& logFileName)
     logger->clearLogFile();
 }
 
+Micromouse::~Micromouse() {
+    logger->disableFileOutput();
+}
+
 void Micromouse::setSensor(std::shared_ptr<Sensor> sensor) {
     this->sensor = sensor;
     logger->logMessage("Sensor set for Micromouse");
@@ -82,20 +86,16 @@ void RightHandRuleBacktrackingMazeSolver::followRightHandRule() {
     std::string newDirection = rightTurns.at(direction);
     auto [dx, dy] = directions.at(newDirection);
 
-    // Check if right-hand side is free
     if (knownMaze[posX + dx][posY + dy] != 1) {
         direction = newDirection;
     } else {
-        // Check current direction
         auto [dx, dy] = directions.at(direction);
         if (knownMaze[posX + dx][posY + dy] == 1) {
-            // Check left-hand side
             newDirection = leftTurns.at(direction);
             auto [dx, dy] = directions.at(newDirection);
             if (knownMaze[posX + dx][posY + dy] != 1) {
                 direction = newDirection;
             } else {
-                // Turn around
                 newDirection = rightTurns.at(rightTurns.at(direction));
                 direction = newDirection;
             }
@@ -104,10 +104,8 @@ void RightHandRuleBacktrackingMazeSolver::followRightHandRule() {
     logger->logMessage("Step " + std::to_string(step) + ": Following right-hand rule. Micromouse decided to turn " + direction);
 }
 
-
 LeftHandRuleBacktrackingMazeSolver::LeftHandRuleBacktrackingMazeSolver()
-    : Micromouse("lhrb_maze_solver") {
-    }
+    : Micromouse("lhrb_maze_solver") {}
 
 void LeftHandRuleBacktrackingMazeSolver::makeDecision() {
     followLeftHandRule();
@@ -117,20 +115,16 @@ void LeftHandRuleBacktrackingMazeSolver::followLeftHandRule() {
     std::string newDirection = leftTurns.at(direction);
     auto [dx, dy] = directions.at(newDirection);
 
-    // Check if left-hand side is free
     if (knownMaze[posX + dx][posY + dy] != 1) {
         direction = newDirection;
     } else {
-        // Check current direction
         auto [dx, dy] = directions.at(direction);
         if (knownMaze[posX + dx][posY + dy] == 1) {
-            // Check right-hand side
             newDirection = rightTurns.at(direction);
             auto [dx, dy] = directions.at(newDirection);
             if (knownMaze[posX + dx][posY + dy] != 1) {
                 direction = newDirection;
             } else {
-                // Turn around
                 newDirection = leftTurns.at(leftTurns.at(direction));
                 direction = newDirection;
             }
@@ -166,23 +160,19 @@ std::string TeleportingUndecidedMazeSolver::getNextDirection(int x, int y) {
 }
 
 void TeleportingUndecidedMazeSolver::makeDecision() {
-    // Current position
     int x = getPosX();
     int y = getPosY();
     visited[{x, y}] = 1;
 
-    // Push current position to backtrack stack
     if (backtrackStack.empty() || backtrackStack.top() != std::make_pair(x, y)) {
         backtrackStack.push({x, y});
     }
 
-    // Check for untried directions
     if (hasUntriedDirection(x, y)) {
         direction = getNextDirection(x, y);
         return;
     }
 
-    // If no untried directions, backtrack
     while (!backtrackStack.empty()) {
         auto [backX, backY] = backtrackStack.top();
         backtrackStack.pop();
@@ -194,7 +184,6 @@ void TeleportingUndecidedMazeSolver::makeDecision() {
         }
     }
 
-    // If completely stuck, stay in place
     logger->logMessage("Step " + std::to_string(step) + ": Micromouse is stuck with no untried directions available.");
 }
 

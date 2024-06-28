@@ -60,18 +60,6 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # Test executable
 add_executable(tests tests/test_maze.cpp ${SOURCES})
 
-
-# # Remove this line if you want to run only production code
-# target_compile_definitions(hello_world PRIVATE UNIT_TEST)
-
-# target_link_libraries(
-#   hello_world
-#   GTest::gtest_main
-# )
-
-# include(GoogleTest)
-# gtest_discover_tests(hello_world)
-
 # Link pthread for threads
 target_link_libraries(MicromouseProject pthread)
 

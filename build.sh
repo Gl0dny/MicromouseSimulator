@@ -1,141 +1,191 @@
 #!/bin/bash
 
-# Funkcja do sprawdzenia, czy CMake jest zainstalowany
+# Function to check if CMake is installed
 check_cmake() {
     if ! command -v cmake &> /dev/null
     then
-        echo "CMake nie jest zainstalowany. Zainstaluj CMake i spróbuj ponownie."
+        echo "CMake is not installed. Please install CMake and try again."
         exit 1
     fi
 }
 
-# Funkcja do sprawdzenia, czy Qt5 jest zainstalowany
+# Function to check if Qt5 is installed
 check_qt() {
     if ! command -v qmake &> /dev/null
     then
-        echo "Qt5 nie jest zainstalowany. Zainstaluj Qt5 i spróbuj ponownie."
+        echo "Qt5 is not installed. Please install Qt5 and try again."
         exit 1
     fi
 }
 
-# Funkcja do wyświetlania pomocy
-show_help() {
-    echo "Użycie: ./build.sh [opcje]"
-    echo "Opcje:"
-    echo "  --help     Wyświetla tę pomoc"
-    echo "  --test     Buduje projekt i uruchamia tylko testy, bez uruchamiania głównej aplikacji"
-    echo "  --clean    Czyści katalog build i wszystkie pliki wyjściowe"
-    echo "  --debug    Buduje projekt w trybie debugowania"
+# Function to check if Doxygen is installed
+check_doxygen() {
+    if ! command -v doxygen &> /dev/null
+    then
+        echo "Doxygen is not installed. Please install Doxygen and try again."
+        exit 1
+    fi
 }
 
-# Funkcja do czyszczenia katalogu build i plików wyjściowych
+# Function to display help
+show_help() {
+    echo "Usage: ./build.sh [options]"
+    echo "Options:"
+    echo "  --help     Displays this help message"
+    echo "  --test     Builds the project and runs tests only, without running the main application"
+    echo "  --clean    Cleans the build directory and all output files"
+    echo "  --debug    Builds the project in debug mode"
+    echo "  --doc      Generates Doxygen documentation"
+}
+
+# Function to clean the build directory and output files
 clean_build() {
-    echo "Czyszczenie katalogu build i wszystkich plików wyjściowych..."
+    echo "Cleaning the build directory and all output files..."
     rm -rf build
     rm -rf logs
     rm -rf tests/logs
     if [ $? -ne 0 ]; then
-        echo "Czyszczenie nie powiodło się."
+        echo "Cleaning failed."
         exit 1
     fi
-    echo "Czyszczenie zakończone sukcesem."
+    echo "Cleaning completed successfully."
 }
 
-# Funkcja do budowania projektu
+# Function to build the project
 build() {
-    echo "Tworzenie katalogu build, jeśli nie istnieje..."
+    echo "Checking if cmake is installed..."
+    check_cmake
+
+    # echo "Checking if QT is installed..."
+    # check_qt
+
+    echo "Creating build directory if it does not exist..."
     if [ ! -d "build" ]; then
         mkdir build
     fi
 
     cd build || exit
 
-    # Konfiguracja projektu za pomocą CMake
-    echo "Konfiguracja projektu za pomocą CMake..."
+    # Configure the project using CMake
+    echo "Configuring the project using CMake..."
     if $DEBUG; then
         cmake -DCMAKE_BUILD_TYPE=Debug ..
     else
         cmake ..
     fi
 
-    # Sprawdzenie, czy konfiguracja zakończyła się sukcesem
+    # Check if configuration was successful
     if [ $? -ne 0 ]; then
-        echo "Konfiguracja CMake nie powiodła się."
+        echo "CMake configuration failed."
         exit 1
     fi
 
-    # Kompilacja projektu
-    echo "Kompilacja projektu..."
+    # Compile the project
+    echo "Compiling the project..."
     make
 
-    # Sprawdzenie, czy kompilacja zakończyła się sukcesem
+    # Check if compilation was successful
     if [ $? -ne 0 ]; then
-        echo "Kompilacja projektu nie powiodła się."
+        echo "Project compilation failed."
         exit 1
     fi
 
     cd ..
 }
 
-# Funkcja do uruchamiania aplikacji
+# Function to generate Doxygen documentation
+generate_docs() {
+    check_doxygen
+    echo "Generating Doxygen documentation..."
+
+    # Check if ./docs/Doxyfile exists
+    if [ ! -f "./docs/Doxyfile" ]; then
+        # Create the docs directory if it does not exist
+        mkdir -p docs
+
+        # Generate Doxyfile inside the docs directory
+        doxygen -g docs/Doxyfile
+    fi
+
+    # Generate documentation using the Doxyfile in the docs directory
+    doxygen docs/Doxyfile
+
+    if [ $? -ne 0 ]; then
+        echo "Doxygen documentation generation failed."
+        exit 1
+    fi
+    echo "Doxygen documentation generated successfully."
+}
+
+# Function to run the application
 run_application() {
-    echo "Uruchamianie aplikacji..."
+    echo "Running the application..."
     ./build/MicromouseProject
 
-    # Sprawdzenie, czy aplikacja została uruchomiona poprawnie
+    # Check if the application ran successfully
     if [ $? -ne 0 ]; then
-        echo "Uruchomienie aplikacji nie powiodło się."
+        echo "Application execution failed."
         exit 1
     fi
 }
 
-# Funkcja do uruchamiania testów
+# Function to run tests
 run_tests() {
-    echo "Uruchamianie testów..."
+    echo "Running tests..."
     ./build/tests
 
-    # Sprawdzenie, czy testy zakończyły się sukcesem
+    # Check if tests ran successfully
     if [ $? -ne 0 ]; then
-        echo "Testy nie powiodły się."
+        echo "Tests failed."
         exit 1
     fi
     cd ..
 }
 
-# Flagi
+# Flags
 CLEAN=false
 TEST=false
 DEBUG=false
+DOC=false
 
-# Parsowanie argumentów
+# Parse arguments
 for arg in "$@"
 do
     case $arg in
         --clean)
         CLEAN=true
-        shift # Usuwa argument
+        shift # Remove argument
         ;;
         --test)
         TEST=true
-        shift # Usuwa argument
+        shift # Remove argument
         ;;
         --debug)
         DEBUG=true
-        shift # Usuwa argument
+        shift # Remove argument
+        ;;
+        --doc)
+        DOC=true
+        shift # Remove argument
         ;;
         --help)
         show_help
         exit 0
         ;;
         *)
-        echo "Nieznany argument: $arg"
+        echo "Unknown argument: $arg"
         show_help
         exit 1
         ;;
     esac
 done
 
-# Wykonywanie odpowiednich czynności na podstawie flag
+if $DOC; then
+    generate_docs
+    exit 0
+fi
+
+# Perform appropriate actions based on flags
 if $CLEAN; then
     clean_build
 fi
